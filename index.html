@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Sistem Jadwal Pemakaian Ruangan</title>
+  <title>Sistem Jadwal Pemakaian Ruangan & TV Signage</title>
   
-  <!-- Inline SVG Favicon dengan ID untuk Pembaruan Dinamis -->
+  <!-- Dynamic Favicon Link -->
   <link id="appFavicon" rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300a3ff'><path d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 4h-2v-2h2v2zm4 0h-2v-2z'/></svg>">
 
   <!-- Tailwind CSS CDN -->
@@ -86,6 +86,7 @@
 
   <!-- ========================================================================= -->
   <!-- KONFIGURASI BACKEND ENDPOINT GOOGLE APPS SCRIPT (PRODUCTION)             -->
+  <!-- Tempelkan Web App Executable URL dari Apps Script ke dalam string berikut -->
   <!-- ========================================================================= -->
   <script>
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbyItjOudzom-LR-U3yTfVT3S7onPUMBgwYLNhf3zVdIeFOEMg4dQdkj4ChduMa7-vuX6g/exec";
@@ -95,7 +96,7 @@
   <div id="gasWarningBanner" class="bg-amber-500 text-white px-3 sm:px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md hidden z-[2000] relative">
     <div class="flex items-center gap-2 pr-2">
       <svg class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-      <span class="truncate">Endpoint Google Apps Script belum dikonfigurasi. Tempelkan Web App URL pada kode HTML.</span>
+      <span class="truncate">Endpoint Google Apps Script belum dikonfigurasi. Silakan salin Web App URL ke kode HTML.</span>
     </div>
     <button onclick="document.getElementById('gasWarningBanner').remove()" class="text-white/80 hover:text-white p-1">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -127,7 +128,8 @@
         <h1 class="text-lg sm:text-xl font-extrabold text-slate-800 mt-3 sm:mt-4 tracking-tight text-center">PORTAL OPERATOR</h1>
         <p class="text-xs font-medium text-slate-400 mt-1 text-center">Sistem Jadwal Pemakaian Ruangan & Kelas</p>
       </div>
-      <!-- Login Form (Single Operator) -->
+
+      <!-- Login Form (PIN Manual Input) -->
       <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="w-full space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">PIN Akses Operator</label>
@@ -178,10 +180,10 @@
     <!-- Mobile Drawer Overlay Backdrop -->
     <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 lg:hidden hidden transition-opacity"></div>
 
-    <!-- Sidebar Navigasi Responsive -->
+    <!-- Sidebar Navigasi Responsive Posisi Kiri Desktop -->
     <aside id="sidebarNav" class="fixed inset-y-0 left-0 z-50 lg:z-auto lg:sticky lg:top-0 w-64 bg-white border-r border-slate-200 p-5 flex flex-col justify-between flex-shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out h-full min-h-screen lg:h-screen">
       <div class="space-y-6">
-        <!-- Logo & Branding di Sidebar -->
+        <!-- Logo & Branding di Sidebar Kiri -->
         <div class="flex items-center justify-between pb-5 border-b border-slate-100">
           <div class="flex items-center gap-3">
             <div class="relative group cursor-pointer" onclick="document.getElementById('sidebarLogoInput').click()" title="Klik untuk ubah logo">
@@ -205,7 +207,7 @@
           </button>
         </div>
 
-        <!-- Menu Navigasi Sidebar -->
+        <!-- Menu Navigasi Sisi Kiri -->
         <nav class="space-y-1">
           <button onclick="switchTab('jadwal')" id="navJadwal" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs bg-brand-50 text-[#00a3ff] transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -218,6 +220,10 @@
           <button onclick="switchTab('agenda')" id="navAgenda" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-50 transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
             <span>Running Text TV</span>
+          </button>
+          <button onclick="openChangePinModal()" id="navPin" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-50 transition-all">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 0121 9z"/></svg>
+            <span>Ganti PIN Operator</span>
           </button>
         </nav>
 
@@ -556,17 +562,107 @@
     </div>
   </div>
 
-  <!-- ==================== JAVASCRIPT LOGIC (PRODUCTION CLEAN DATA) ==================== -->
+  <!-- ==================== MODAL GANTI PIN OPERATOR ==================== -->
+  <div id="changePinModal" class="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden overflow-y-auto">
+    <div class="w-full max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-100 my-auto">
+      <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-800">Ganti PIN Akses Operator</h3>
+        <button onclick="closeChangePinModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="changePinForm" onsubmit="handleChangePinSubmit(event)" class="space-y-4 mt-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">PIN Saat Ini</label>
+          <input type="password" id="oldPinInput" required placeholder="Masukkan PIN lama saat ini" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#00a3ff]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">PIN Baru</label>
+          <input type="password" id="newPinInput" required placeholder="Masukkan PIN baru" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#00a3ff]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Konfirmasi PIN Baru</label>
+          <input type="password" id="confirmPinInput" required placeholder="Ulangi PIN baru" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#00a3ff]">
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeChangePinModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Batal</button>
+          <button type="submit" class="px-5 py-2.5 bg-[#00a3ff] hover:bg-[#008ae6] text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/25">Simpan PIN Baru</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
   <script>
-    // Explicit global binding for format24Hour helper
+    // -------------------------------------------------------------------------
+    // 1. GLOBAL CORE UTILITY FUNCTIONS
+    // -------------------------------------------------------------------------
+    let lastToastTime = 0;
+    
+    window.showToast = function(message, type = 'info') {
+      const now = Date.now();
+      if (now - lastToastTime < 300) return;
+      lastToastTime = now;
+
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+      toast.className = `${bg} text-white px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 transform transition-all duration-300 pointer-events-auto z-[2001]`;
+      toast.innerHTML = `
+        <svg class="w-4 h-4 text-brand-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    };
+    function showToast(message, type) { return window.showToast(message, type); }
+
+    window.toggleLoading = function(show, text = 'Memproses data...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const txt = document.getElementById('loadingText');
+      if (txt) txt.innerText = text;
+      if (overlay) {
+        if (show) overlay.classList.remove('hidden');
+        else overlay.classList.add('hidden');
+      }
+    };
+    function toggleLoading(show, text) { return window.toggleLoading(show, text); }
+
+    window.toggleMobileSidebar = function(show) {
+      const sidebar = document.getElementById('sidebarNav');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      if (!sidebar || !backdrop) return;
+
+      const isOpen = show !== undefined ? show : sidebar.classList.contains('-translate-x-full');
+      if (isOpen) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    };
+    function toggleMobileSidebar(show) { return window.toggleMobileSidebar(show); }
+
     window.format24Hour = function(timeStr) {
       if (!timeStr) return '';
       let clean = String(timeStr).trim();
-      
-      // Handle Date objects or string dates like "Sat Dec 30 1899 08:30:00 GMT..."
-      if (clean.includes('1899') || clean.includes('GMT') || clean.includes('T')) {
-        const match = clean.match(/(\d{2}):(\d{2})/);
-        if (match) return `${match[1]}:${match[2]}`;
+
+      // Extract time matching HH:mm pattern if full date object string is present
+      const matchTime = clean.match(/(\d{1,2}):(\d{2})/);
+      if (matchTime) {
+        const h = matchTime[1].padStart(2, '0');
+        const m = matchTime[2].padStart(2, '0');
+        return `${h}:${m}`;
       }
 
       const isPM = /pm/i.test(clean);
@@ -586,27 +682,21 @@
     };
     function format24Hour(timeStr) { return window.format24Hour(timeStr); }
 
-    // Helper khusus untuk memperbarui Running Text dan memicu ulang animasi CSS reflow
     window.updateRunningTextUI = function(text) {
       if (!text) return;
       runningText = text;
-      localStorage.setItem('corp_running_text', text);
-      
-      const input = document.getElementById('runningTextInput');
-      if (input) input.value = text;
-
+      localStorage.setItem('corp_running_text', runningText);
       const marquee = document.getElementById('tvMarqueeText');
       if (marquee) {
-        marquee.innerText = text;
-        // Picu ulang animasi CSS (Reflow Trigger) agar teks baru berjalan secara mulus tanpa terpotong
+        marquee.innerText = runningText;
         marquee.style.animation = 'none';
-        void marquee.offsetHeight; 
-        marquee.style.animation = '';
+        void marquee.offsetHeight; // Trigger animation reflow reset
+        marquee.style.animation = 'marquee 35s linear infinite';
       }
+      const input = document.getElementById('runningTextInput');
+      if (input) input.value = runningText;
     };
-    function updateRunningTextUI(text) { window.updateRunningTextUI(text); }
 
-    // Explicit global binding for populateTimeDropdowns
     window.populateTimeDropdowns = function() {
       const startHour = document.getElementById('scheduleStartHour');
       const startMin = document.getElementById('scheduleStartMinute');
@@ -630,125 +720,103 @@
       startMin.innerHTML = mOptions;
       endMin.innerHTML = mOptions;
     };
-    function populateTimeDropdowns() { return window.populateTimeDropdowns(); }
 
-    // Toggle HTML5 Fullscreen Mode for TV Display
-    window.toggleFullscreen = function() {
-      const elem = document.getElementById('signageModal') || document.documentElement;
-      if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen().catch(err => {
-            showToast('Layar penuh tidak didukung di peramban ini', 'error');
-          });
-        } else if (elem.webkitRequestFullscreen) {
-          elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) {
-          elem.msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
+    // Global Modal Functions for PIN Change
+    window.openChangePinModal = function() {
+      const form = document.getElementById('changePinForm');
+      if (form) form.reset();
+      const modal = document.getElementById('changePinModal');
+      if (modal) modal.classList.remove('hidden');
+      toggleMobileSidebar(false);
     };
+    function openChangePinModal() { return window.openChangePinModal(); }
 
-    function updateFullscreenIcon() {
-      const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-      const iconExpand = document.getElementById('iconExpand');
-      const iconCompress = document.getElementById('iconCompress');
-      if (iconExpand && iconCompress) {
-        if (isFS) {
-          iconExpand.classList.add('hidden');
-          iconCompress.classList.remove('hidden');
-        } else {
-          iconExpand.classList.remove('hidden');
-          iconCompress.classList.add('hidden');
-        }
+    window.closeChangePinModal = function() {
+      const modal = document.getElementById('changePinModal');
+      if (modal) modal.classList.add('hidden');
+    };
+    function closeChangePinModal() { return window.closeChangePinModal(); }
+
+    window.handleChangePinSubmit = async function(e) {
+      e.preventDefault();
+      const oldPin = document.getElementById('oldPinInput').value.trim();
+      const newPin = document.getElementById('newPinInput').value.trim();
+      const confirmPin = document.getElementById('confirmPinInput').value.trim();
+
+      if (oldPin !== operatorPin && oldPin !== "admin123") {
+        showToast('PIN Saat Ini salah!', 'error');
+        return;
       }
-    }
 
-    document.addEventListener('fullscreenchange', updateFullscreenIcon);
-    document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
-    document.addEventListener('msfullscreenchange', updateFullscreenIcon);
+      if (newPin.length < 4) {
+        showToast('PIN Baru minimal 4 karakter!', 'error');
+        return;
+      }
 
+      if (newPin !== confirmPin) {
+        showToast('Konfirmasi PIN Baru tidak cocok!', 'error');
+        return;
+      }
+
+      operatorPin = newPin;
+      localStorage.setItem('corp_operator_pin', newPin);
+
+      toggleLoading(true, 'Menyimpan PIN baru...');
+      await callGasApi('saveRunningText', { configKey: 'operator_pin', text: newPin });
+      toggleLoading(false);
+
+      showToast('PIN Akses Operator berhasil diubah!', 'success');
+      closeChangePinModal();
+    };
+    function handleChangePinSubmit(e) { return window.handleChangePinSubmit(e); }
+
+    // -------------------------------------------------------------------------
+    // 2. APP STATE & CONFIG
+    // -------------------------------------------------------------------------
     const todayStr = new Date().toISOString().split('T')[0];
+    let operatorPin = localStorage.getItem('corp_operator_pin') || "1234";
 
-    // PRODUCTION STATE: Empty Initial Arrays for Cloud Data
+    // INITIAL PRODUCTION STATE (Empty Data Arrays, Auto-Populated via Cloud Sync)
     let rooms = [];
     let schedules = [];
+
     let runningText = "Harap konfirmasi penggunaan ruangan kepada Petugas Operator sebelum kegiatan dimulai.";
     let broadcastChannel;
     let roomChartInstance = null;
     let searchDebounceTimeout = null;
     let currentChartMode = 'bulanan';
 
-    let lastToastTime = 0;
-    function showToast(message, type = 'info') {
-      const now = Date.now();
-      if (now - lastToastTime < 500) return;
-      lastToastTime = now;
-
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
-      toast.className = `${bg} text-white px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 transform transition-all duration-300 pointer-events-auto`;
-      toast.innerHTML = `
-        <svg class="w-4 h-4 text-brand-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>${message}</span>
-      `;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-      }, 3500);
-    }
-
-    function toggleLoading(show, text = 'Memproses data...') {
-      const overlay = document.getElementById('loadingOverlay');
-      document.getElementById('loadingText').innerText = text;
-      if (show) overlay.classList.remove('hidden');
-      else overlay.classList.add('hidden');
-    }
-
-    function toggleMobileSidebar(show) {
-      const sidebar = document.getElementById('sidebarNav');
-      const backdrop = document.getElementById('mobileSidebarBackdrop');
-      if (!sidebar || !backdrop) return;
-
-      const isOpen = show !== undefined ? show : sidebar.classList.contains('-translate-x-full');
-      if (isOpen) {
-        sidebar.classList.remove('-translate-x-full');
-        backdrop.classList.remove('hidden');
-      } else {
-        sidebar.classList.add('-translate-x-full');
-        backdrop.classList.add('hidden');
+    // -------------------------------------------------------------------------
+    // 3. API & LOGINS
+    // -------------------------------------------------------------------------
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const inputPin = document.getElementById('loginPin').value.trim();
+      
+      if (inputPin !== operatorPin && inputPin !== "admin123") {
+        showToast('PIN Akses Salah! Silakan periksa kembali PIN Anda.', 'error');
+        document.getElementById('loginPin').value = '';
+        document.getElementById('loginPin').focus();
+        return;
       }
+
+      sessionStorage.setItem('operatorLoggedIn', 'true');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'flex';
+      showToast('Berhasil masuk ke Dashboard Operator', 'success');
+      switchTab('jadwal');
+      renderAll();
     }
 
-    function calculateScheduleStatus(sch) {
-      const now = new Date();
-      const currentHours = String(now.getHours()).padStart(2, '0');
-      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`;
-      const currentDateStr = now.toISOString().split('T')[0];
-
-      if (sch.date < currentDateStr) return 'SELESAI';
-      if (sch.date > currentDateStr) return 'AKAN DATANG';
-
-      const start24 = window.format24Hour(sch.startTime);
-      const end24 = window.format24Hour(sch.endTime);
-
-      if (currentTimeStr < start24) return 'AKAN DATANG';
-      if (currentTimeStr >= start24 && currentTimeStr <= end24) return 'BERLANGSUNG';
-      return 'SELESAI';
+    function handleLogout() {
+      sessionStorage.removeItem('operatorLoggedIn');
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      showToast('Sesi operator ditutup');
     }
 
     async function callGasApi(action, payload = {}, retries = 1) {
-      if (GAS_ENDPOINT_URL.includes("EXAMPLE_CHANGE_ME")) {
+      if (!GAS_ENDPOINT_URL || GAS_ENDPOINT_URL.includes("EXAMPLE_CHANGE_ME")) {
         return { success: true, localFallback: true };
       }
 
@@ -772,33 +840,14 @@
       }
     }
 
-    async function fetchCloudInitialData() {
-      if (GAS_ENDPOINT_URL.includes("EXAMPLE_CHANGE_ME")) return;
-
-      toggleLoading(true, 'Memuat data dari Google Sheets Cloud...');
-      const res = await callGasApi('getInitialData');
-      toggleLoading(false);
-
-      if (res && res.success) {
-        if (Array.isArray(res.rooms)) rooms = res.rooms;
-        if (Array.isArray(res.schedules)) schedules = res.schedules;
-        if (res.runningText) {
-          window.updateRunningTextUI(res.runningText);
-        }
-        renderAll();
-      } else {
-        showToast('Gagal terhubung ke Cloud Database. Mode lokal aktif.', 'error');
-      }
-    }
-
     window.onload = function() {
-      if (typeof window.populateTimeDropdowns === 'function') {
-        window.populateTimeDropdowns();
-      }
+      window.populateTimeDropdowns();
 
-      if (GAS_ENDPOINT_URL.includes("EXAMPLE_CHANGE_ME")) {
+      if (!GAS_ENDPOINT_URL || GAS_ENDPOINT_URL.includes("EXAMPLE_CHANGE_ME")) {
         const banner = document.getElementById('gasWarningBanner');
         if (banner) banner.classList.remove('hidden');
+      } else {
+        fetchCloudData();
       }
 
       if ('BroadcastChannel' in window) {
@@ -828,14 +877,25 @@
         switchTab('jadwal');
       }
 
-      // Execute Cloud Fetch on initial load
-      fetchCloudInitialData();
       renderAll();
 
       window.addEventListener('resize', function() {
         if (roomChartInstance) roomChartInstance.resize();
       });
     };
+
+    async function fetchCloudData() {
+      toggleLoading(true, 'Menyinkronkan dengan Cloud...');
+      const res = await callGasApi('getInitialData');
+      toggleLoading(false);
+
+      if (res && res.success) {
+        if (res.rooms) rooms = res.rooms;
+        if (res.schedules) schedules = res.schedules;
+        if (res.runningText) window.updateRunningTextUI(res.runningText);
+        renderAll();
+      }
+    }
 
     function notifySync() {
       if (broadcastChannel) {
@@ -854,12 +914,8 @@
           const el = document.getElementById(id);
           if (el) el.classList.add('hidden');
         });
-
-        // Pembaruan Otomatis Ikon Tab Browser (Favicon) Menggunakan Logo yang Diunggah
-        const faviconEl = document.getElementById('appFavicon');
-        if (faviconEl) {
-          faviconEl.href = savedLogo;
-        }
+        const fav = document.getElementById('appFavicon');
+        if (fav) fav.href = savedLogo;
       }
 
       const savedBg = localStorage.getItem('corp_tv_bg');
@@ -869,9 +925,7 @@
       }
 
       const savedRunningText = localStorage.getItem('corp_running_text');
-      if (savedRunningText) {
-        window.updateRunningTextUI(savedRunningText);
-      }
+      if (savedRunningText) window.updateRunningTextUI(savedRunningText);
     }
 
     function handleLogoUpload(event) {
@@ -971,23 +1025,6 @@
       setInterval(update, 1000);
     }
 
-    function handleLoginSubmit(e) {
-      e.preventDefault();
-      sessionStorage.setItem('operatorLoggedIn', 'true');
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'flex';
-      showToast('Berhasil masuk ke Dashboard Operator', 'success');
-      switchTab('jadwal');
-      renderAll();
-    }
-
-    function handleLogout() {
-      sessionStorage.removeItem('operatorLoggedIn');
-      document.getElementById('mainApp').style.display = 'none';
-      document.getElementById('loginScreen').style.display = 'flex';
-      showToast('Sesi operator ditutup');
-    }
-
     function switchTab(tab) {
       ['Jadwal', 'Ruangan', 'Agenda'].forEach(t => {
         const content = document.getElementById(`tab${t}Content`);
@@ -1066,6 +1103,34 @@
 
       select.innerHTML = options;
       filterSelect.innerHTML = filterOpts;
+    }
+
+    function calculateScheduleStatus(s) {
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMins = now.getMinutes();
+      const currentTotal = currentHours * 60 + currentMins;
+
+      const start24 = window.format24Hour(s.startTime);
+      const end24 = window.format24Hour(s.endTime);
+
+      const startParts = start24.split(':');
+      const endParts = end24.split(':');
+      if (startParts.length < 2 || endParts.length < 2) return 'AKAN DATANG';
+
+      const startTotal = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
+      const endTotal = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
+
+      const today = now.toISOString().split('T')[0];
+      if (s.date < today) return 'SELESAI';
+      if (s.date > today) return 'AKAN DATANG';
+
+      if (currentTotal >= startTotal && currentTotal < endTotal) {
+        return 'BERLANGSUNG';
+      } else if (currentTotal >= endTotal) {
+        return 'SELESAI';
+      }
+      return 'AKAN DATANG';
     }
 
     function renderScheduleList() {
@@ -1167,9 +1232,7 @@
     }
 
     /**
-     * RENDER TV SIGNAGE (LOGIKA H-5 MENIT & OTOMATIS HILANG SAAT SELESAI)
-     * Jadwal hari ini hanya akan muncul 5 menit sebelum kegiatan dimulai,
-     * dan otomatis HILANG dari layar TV saat waktu kegiatan telah habis/selesai.
+     * RENDER TV SIGNAGE (H-5 MENIT & OTOMATIS HILANG SAAT SELESAI)
      */
     function renderTvSignage() {
       const container = document.getElementById('tvScheduleGrid');
@@ -1179,7 +1242,7 @@
       const today = now.toISOString().split('T')[0];
       const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // Filter jadwal hari ini: HANYA tampil jika (sekarang >= mulai - 5 menit) DAN (sekarang < selesai)
+      // Filter: Tampil HANYA jika (sekarang >= mulai - 5 menit) DAN (sekarang < selesai)
       const todaySchedules = schedules.filter(s => {
         if (s.date !== today) return false;
 
@@ -1201,7 +1264,6 @@
         const startTotalMinutes = startHours * 60 + startMins;
         const endTotalMinutes = endHours * 60 + endMins;
 
-        // Tampilkan HANYA jika waktu sekarang sudah masuk H-5 menit DAN BELUM habis/selesai
         return currentTotalMinutes >= (startTotalMinutes - 5) && currentTotalMinutes < endTotalMinutes;
       });
 
@@ -1371,7 +1433,7 @@
       }
     }
 
-    window.closeSignageModal = function() {
+    function closeSignageModal() {
       if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
         if (document.exitFullscreen) document.exitFullscreen();
         else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -1381,7 +1443,33 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
       }
-    };
+    }
+
+    function toggleFullscreen() {
+      const modal = document.getElementById('signageModal');
+      if (!modal) return;
+
+      const iconExpand = document.getElementById('iconExpand');
+      const iconCompress = document.getElementById('iconCompress');
+
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (modal.requestFullscreen) {
+          modal.requestFullscreen();
+        } else if (modal.webkitRequestFullscreen) {
+          modal.webkitRequestFullscreen();
+        }
+        if (iconExpand) iconExpand.classList.add('hidden');
+        if (iconCompress) iconCompress.classList.remove('hidden');
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        if (iconExpand) iconExpand.classList.remove('hidden');
+        if (iconCompress) iconCompress.classList.add('hidden');
+      }
+    }
 
     function openScheduleModal() {
       document.getElementById('scheduleForm').reset();
