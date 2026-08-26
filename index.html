@@ -1156,8 +1156,9 @@
     }
 
     /**
-     * RENDER TV SIGNAGE (LOGIKA MODIFIKASI 5 MENIT SEBELUM KETETAPAN WAKTU)
-     * Jadwal hari ini hanya akan muncul jika waktu saat ini sudah memasuki H-5 Menit dari jam mulai kegiatan.
+     * RENDER TV SIGNAGE (LOGIKA H-5 MENIT & OTOMATIS HILANG SAAT SELESAI)
+     * Jadwal hari ini hanya akan muncul 5 menit sebelum kegiatan dimulai,
+     * dan otomatis HILANG dari layar TV saat waktu kegiatan telah habis/selesai.
      */
     function renderTvSignage() {
       const container = document.getElementById('tvScheduleGrid');
@@ -1167,22 +1168,30 @@
       const today = now.toISOString().split('T')[0];
       const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // Filter jadwal hari ini & yang waktunya sudah memasuki 5 menit sebelum jam mulai
+      // Filter jadwal hari ini: HANYA tampil jika (sekarang >= mulai - 5 menit) DAN (sekarang < selesai)
       const todaySchedules = schedules.filter(s => {
         if (s.date !== today) return false;
 
         const start24 = window.format24Hour(s.startTime);
-        const parts = start24.split(':');
-        if (parts.length < 2) return true;
+        const end24 = window.format24Hour(s.endTime);
 
-        const startHours = parseInt(parts[0], 10);
-        const startMins = parseInt(parts[1], 10);
-        if (isNaN(startHours) || isNaN(startMins)) return true;
+        const startParts = start24.split(':');
+        const endParts = end24.split(':');
+
+        if (startParts.length < 2 || endParts.length < 2) return true;
+
+        const startHours = parseInt(startParts[0], 10);
+        const startMins = parseInt(startParts[1], 10);
+        const endHours = parseInt(endParts[0], 10);
+        const endMins = parseInt(endParts[1], 10);
+
+        if (isNaN(startHours) || isNaN(startMins) || isNaN(endHours) || isNaN(endMins)) return true;
 
         const startTotalMinutes = startHours * 60 + startMins;
+        const endTotalMinutes = endHours * 60 + endMins;
 
-        // Tampilkan di TV HANYA jika waktu sekarang >= (waktu_mulai - 5 menit)
-        return currentTotalMinutes >= (startTotalMinutes - 5);
+        // Tampilkan HANYA jika waktu sekarang sudah masuk H-5 menit DAN BELUM habis/selesai
+        return currentTotalMinutes >= (startTotalMinutes - 5) && currentTotalMinutes < endTotalMinutes;
       });
 
       if (todaySchedules.length === 0) {
