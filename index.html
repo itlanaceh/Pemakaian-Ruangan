@@ -97,6 +97,7 @@
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
   <script>
+    // URL Web App Google Apps Script (Ubah dengan Web App URL hasil deployment Anda)
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbyItjOudzom-LR-U3yTfVT3S7onPUMBgwYLNhf3zVdIeFOEMg4dQdkj4ChduMa7-vuX6g/exec";
   </script>
 
@@ -125,7 +126,6 @@
     <p id="loadingText" class="mt-4 text-sm font-bold tracking-wide text-slate-100">Menghubungkan Database Cloud...</p>
   </div>
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 w-screen h-screen z-[1000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
     <div class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 flex flex-col items-center my-auto transition-all">
       
@@ -168,7 +168,6 @@
     </div>
   </div>
 
-  <!-- MAIN APP DASHBOARD -->
   <div id="mainApp" class="flex flex-col lg:flex-row min-h-screen w-full relative" style="display: none;">
     
     <!-- Mobile Navigation Topbar -->
@@ -238,7 +237,6 @@
           </button>
         </nav>
 
-        <!-- Quick Display & Sync Actions -->
         <div class="pt-4 border-t border-slate-100 space-y-2">
           <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aksi & Cloud Sync</label>
           
@@ -299,7 +297,6 @@
         </div>
       </div>
 
-      <!-- TAB 1: JADWAL & ANALITIK MAIN DASHBOARD -->
       <div id="tabJadwalContent" class="space-y-5 sm:space-y-6 mt-5 sm:mt-6">
         
         <!-- Bento Grid Analytics -->
@@ -396,7 +393,6 @@
         </div>
       </div>
 
-      <!-- TAB 2: MASTER RUANGAN -->
       <div id="tabRuanganContent" class="space-y-6 mt-6 hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-slate-200/90 shadow-sm">
           <div>
@@ -414,7 +410,6 @@
         </div>
       </div>
 
-      <!-- TAB 3: RUNNING TEXT TV -->
       <div id="tabAgendaContent" class="space-y-6 mt-6 hidden">
         <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
           <h3 class="text-base font-black text-slate-800">Pengaturan Running Text Layar TV</h3>
@@ -435,7 +430,6 @@
     </main>
   </div>
 
-  <!-- DISPLAY TV SIGNAGE MODAL -->
   <div id="signageModal" class="fixed inset-0 w-screen h-screen z-[1000] bg-slate-950 bg-cover bg-center overflow-hidden flex flex-col justify-between hidden" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/></svg>');">
     
     <!-- Dark Glass Backdrop Overlay -->
@@ -627,7 +621,6 @@
 
   <!-- JAVASCRIPT LOGIC SUITE -->
   <script>
-    /* Global State and Variables */
     let rooms = [];
     let schedules = [];
     let runningText = "Harap konfirmasi penggunaan ruangan kepada Petugas Operator sebelum kegiatan dimulai.";
@@ -774,9 +767,7 @@
           localStorage.setItem('corp_tv_bg', res.tvBg);
         }
         
-        // Memastikan seluruh foto & latar tersinkronisasi instan di semua tampilan
         loadSavedMedia();
-
         renderAll();
       }
     };
@@ -847,7 +838,6 @@
       endMin.innerHTML = mOptions;
     };
 
-    /* SECTION 2: INITIALIZATION & EVENTS */
     window.onload = function() {
       window.populateTimeDropdowns();
 
@@ -936,6 +926,43 @@
       }
     }
 
+    /* Kompresi Gambar Otomatis agar muat di batas sel Google Sheets (< 44,000 karakter) */
+    function compressMediaImage(img, maxDimension, targetMaxChars = 44000, mimeType = 'image/jpeg') {
+      let width = img.width;
+      let height = img.height;
+      if (width > height && width > maxDimension) {
+        height = Math.round((height * maxDimension) / width);
+        width = maxDimension;
+      } else if (height > maxDimension) {
+        width = Math.round((width * maxDimension) / height);
+        height = maxDimension;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.65;
+      let base64Data = canvas.toDataURL(mimeType, quality);
+
+      while (base64Data.length > targetMaxChars && quality > 0.15) {
+        quality -= 0.1;
+        base64Data = canvas.toDataURL(mimeType, quality);
+      }
+
+      while (base64Data.length > targetMaxChars && width > 120) {
+        width = Math.round(width * 0.8);
+        height = Math.round(height * 0.8);
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        base64Data = canvas.toDataURL(mimeType, 0.4);
+      }
+      return base64Data;
+    }
+
     function handleLogoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -944,24 +971,7 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = async function() {
-          const canvas = document.createElement('canvas');
-          const maxDim = 320;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height && width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const base64Data = canvas.toDataURL('image/png');
+          const base64Data = compressMediaImage(img, 240, 44000, 'image/png');
 
           localStorage.setItem('corp_app_logo', base64Data);
           loadSavedMedia();
@@ -971,7 +981,7 @@
           toggleLoading(false);
 
           notifySync();
-          showToast('Logo instansi berhasil diperbarui!', 'success');
+          showToast('Logo instansi berhasil diperbarui dan disinkronkan!', 'success');
         };
         img.src = e.target.result;
       };
@@ -986,21 +996,7 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = async function() {
-          const canvas = document.createElement('canvas');
-          const maxW = 1280;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxW) {
-            height = Math.round((height * maxW) / width);
-            width = maxW;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const base64Data = canvas.toDataURL('image/jpeg', 0.7);
+          const base64Data = compressMediaImage(img, 800, 44000, 'image/jpeg');
 
           localStorage.setItem('corp_tv_bg', base64Data);
           loadSavedMedia();
@@ -1010,7 +1006,7 @@
           toggleLoading(false);
 
           notifySync();
-          showToast('Background TV Signage berhasil diperbarui!', 'success');
+          showToast('Background TV Signage berhasil diperbarui dan disinkronkan!', 'success');
         };
         img.src = e.target.result;
       };
@@ -1043,7 +1039,6 @@
       setInterval(update, 1000);
     }
 
-    /* SECTION 3: AUTHENTICATION & LOGIN */
     function handleLoginSubmit(e) {
       e.preventDefault();
       const pinInput = document.getElementById('loginPin').value.trim();
@@ -1132,7 +1127,6 @@
       window.toggleMobileSidebar(false);
     };
 
-    /* SECTION 5: RENDERERS & SCHEDULE CALCULATIONS */
     function calculateScheduleStatus(sch) {
       const now = new Date();
       const currentH = String(now.getHours()).padStart(2, '0');
@@ -1297,7 +1291,6 @@
       const displaySchedules = [];
 
       Object.keys(roomGroups).forEach(roomId => {
-        // Sort room schedules by start time
         roomGroups[roomId].sort((a, b) => {
           const aStart = format24Hour(a.startTime).split(':').map(Number);
           const bStart = format24Hour(b.startTime).split(':').map(Number);
@@ -1334,7 +1327,7 @@
         });
       });
 
-      // Penyesuaian Grid Dinamis & Adaptif berdasarkan Jumlah Jadwal
+      // Dynamic responsive grid sizing
       const gridCount = displaySchedules.length;
       let gridClass = "grid gap-4 sm:gap-6 lg:gap-8 items-stretch w-full ";
       if (gridCount === 1) {
@@ -1390,8 +1383,8 @@
                 <span class="px-3 py-1 rounded-xl bg-brand-50 text-[#00a3ff] text-[10px] sm:text-xs lg:text-sm font-black border border-brand-100">${room.floor}</span>
               </div>
               <h3 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black text-slate-900 mt-3 sm:mt-4 tracking-tight leading-snug break-words">${s.agenda}</h3>
-              <p class="text-xs sm:text-sm lg:text-base xl:text-lg font-bold text-slate-600 mt-2 sm:mt-3 flex items-center gap-2">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-[#00a3ff] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <p class="text-sm sm:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-black text-slate-800 mt-2.5 sm:mt-3 flex items-center gap-2">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-[#00a3ff] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 <span>${room.name}</span>
               </p>
             </div>
@@ -1531,7 +1524,6 @@
       }, 300);
     }
 
-    /* Fullscreen Mode Controller */
     window.toggleFullscreen = function() {
       const modal = document.getElementById('signageModal');
       if (!modal) return;
