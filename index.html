@@ -874,8 +874,17 @@
           localStorage.setItem('corp_operator_pin', operatorPin);
           changed = true;
         }
+        if (res.appLogo && res.appLogo !== localStorage.getItem('corp_app_logo')) {
+          localStorage.setItem('corp_app_logo', res.appLogo);
+          changed = true;
+        }
+        if (res.tvBg && res.tvBg !== localStorage.getItem('corp_tv_bg')) {
+          localStorage.setItem('corp_tv_bg', res.tvBg);
+          changed = true;
+        }
 
         if (changed || !silent) {
+          loadSavedMedia();
           renderAll();
         }
       }
@@ -976,9 +985,9 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = async function() {
           const canvas = document.createElement('canvas');
-          const maxDim = 400;
+          const maxDim = 250;
           let width = img.width;
           let height = img.height;
 
@@ -998,8 +1007,52 @@
 
           localStorage.setItem('corp_app_logo', base64Data);
           loadSavedMedia();
+
+          toggleLoading(true, 'Menyimpan logo ke database cloud...');
+          await callGasApi('saveConfig', { key: 'app_logo', value: base64Data });
+          toggleLoading(false);
+
           notifySync();
-          showToast('Logo instansi berhasil diperbarui', 'success');
+          showToast('Logo instansi berhasil disimpan & tersinkron ke semua perangkat!', 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleBgUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+          const canvas = document.createElement('canvas');
+          const maxW = 1000;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxW) {
+            height = Math.round((height * maxW) / width);
+            width = maxW;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const base64Data = canvas.toDataURL('image/jpeg', 0.5);
+
+          localStorage.setItem('corp_tv_bg', base64Data);
+          loadSavedMedia();
+
+          toggleLoading(true, 'Menyimpan background TV ke database cloud...');
+          await callGasApi('saveConfig', { key: 'tv_bg', value: base64Data });
+          toggleLoading(false);
+
+          notifySync();
+          showToast('Background TV berhasil disimpan & tersinkron ke semua perangkat!', 'success');
         };
         img.src = e.target.result;
       };
