@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Sistem Jadwal Pemakaian Ruangan & TV Signage (Production)</title>
+  <title>Sistem Jadwal Pemakaian Ruangan</title>
   
   <!-- Inline SVG Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300a3ff'><path d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 4h-2v-2h2v2zm4 0h-2v-2z'/></svg>">
@@ -720,8 +720,11 @@
       if (sch.date < currentDateStr) return 'SELESAI';
       if (sch.date > currentDateStr) return 'AKAN DATANG';
 
-      if (currentTimeStr < sch.startTime) return 'AKAN DATANG';
-      if (currentTimeStr >= sch.startTime && currentTimeStr <= sch.endTime) return 'BERLANGSUNG';
+      const start24 = window.format24Hour(sch.startTime);
+      const end24 = window.format24Hour(sch.endTime);
+
+      if (currentTimeStr < start24) return 'AKAN DATANG';
+      if (currentTimeStr >= start24 && currentTimeStr <= end24) return 'BERLANGSUNG';
       return 'SELESAI';
     }
 
@@ -1196,7 +1199,7 @@
           badgeHtml = `
             <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10b981] text-white text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-sm">
               <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              <span>BERLANGSUNG</span>
+              <span>SEDANG BERLANGSUNG</span>
             </div>
           `;
         } else if (status === 'AKAN DATANG') {
