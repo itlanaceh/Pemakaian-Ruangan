@@ -86,13 +86,12 @@
 
   <!-- ========================================================================= -->
   <!-- KONFIGURASI BACKEND ENDPOINT GOOGLE APPS SCRIPT (PRODUCTION)             -->
-  <!-- Tempelkan URL Web App hasil Deploy dari Google Apps Script di bawah ini   -->
   <!-- ========================================================================= -->
   <script>
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbyItjOudzom-LR-U3yTfVT3S7onPUMBgwYLNhf3zVdIeFOEMg4dQdkj4ChduMa7-vuX6g/exec";
   </script>
 
-  <!-- Smart Warning Banner (Diaktifkan jika URL belum dikonfigurasi) -->
+  <!-- Smart Warning Banner -->
   <div id="gasWarningBanner" class="bg-amber-500 text-white px-3 sm:px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md hidden z-[2000] relative">
     <div class="flex items-center gap-2 pr-2">
       <svg class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -401,7 +400,7 @@
     </main>
   </div>
 
-  <!-- ==================== DISPLAY TV SIGNAGE (DENGAN TOMBOL FULLSCREEN & LOGIKA 5 MENIT SEBELUM) ==================== -->
+  <!-- ==================== DISPLAY TV SIGNAGE ==================== -->
   <div id="signageModal" class="fixed inset-0 w-screen h-screen z-[1000] bg-slate-900 bg-cover bg-center overflow-hidden flex flex-col justify-between hidden" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%231e293b%22/></svg>');">
     
     <!-- Full Height Backdrop Overlay -->
@@ -587,6 +586,26 @@
     };
     function format24Hour(timeStr) { return window.format24Hour(timeStr); }
 
+    // Helper khusus untuk memperbarui Running Text dan memicu ulang animasi CSS reflow
+    window.updateRunningTextUI = function(text) {
+      if (!text) return;
+      runningText = text;
+      localStorage.setItem('corp_running_text', text);
+      
+      const input = document.getElementById('runningTextInput');
+      if (input) input.value = text;
+
+      const marquee = document.getElementById('tvMarqueeText');
+      if (marquee) {
+        marquee.innerText = text;
+        // Picu ulang animasi CSS (Reflow Trigger) agar teks baru berjalan secara mulus tanpa terpotong
+        marquee.style.animation = 'none';
+        void marquee.offsetHeight; 
+        marquee.style.animation = '';
+      }
+    };
+    function updateRunningTextUI(text) { window.updateRunningTextUI(text); }
+
     // Explicit global binding for populateTimeDropdowns
     window.populateTimeDropdowns = function() {
       const startHour = document.getElementById('scheduleStartHour');
@@ -764,11 +783,7 @@
         if (Array.isArray(res.rooms)) rooms = res.rooms;
         if (Array.isArray(res.schedules)) schedules = res.schedules;
         if (res.runningText) {
-          runningText = res.runningText;
-          const input = document.getElementById('runningTextInput');
-          if (input) input.value = runningText;
-          const marquee = document.getElementById('tvMarqueeText');
-          if (marquee) marquee.innerText = runningText;
+          window.updateRunningTextUI(res.runningText);
         }
         renderAll();
       } else {
@@ -855,11 +870,7 @@
 
       const savedRunningText = localStorage.getItem('corp_running_text');
       if (savedRunningText) {
-        runningText = savedRunningText;
-        const input = document.getElementById('runningTextInput');
-        if (input) input.value = runningText;
-        const marquee = document.getElementById('tvMarqueeText');
-        if (marquee) marquee.innerText = runningText;
+        window.updateRunningTextUI(savedRunningText);
       }
     }
 
@@ -1541,10 +1552,7 @@
       await callGasApi('saveRunningText', { text });
       toggleLoading(false);
 
-      runningText = text;
-      localStorage.setItem('corp_running_text', runningText);
-      const marquee = document.getElementById('tvMarqueeText');
-      if (marquee) marquee.innerText = runningText;
+      window.updateRunningTextUI(text);
       notifySync();
       showToast('Running text TV berhasil diperbarui', 'success');
     }
