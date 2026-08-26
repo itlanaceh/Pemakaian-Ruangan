@@ -191,7 +191,7 @@
                 <span id="sidebarLogoPlaceholder" class="text-xs font-bold text-[#00a3ff] hidden">LOGO</span>
               </div>
               <div class="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 00-2 2H5a2 2 0 00-2-2V9z"/></svg>
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 00-2-2V9z"/></svg>
               </div>
               <input type="file" id="sidebarLogoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
             </div>
@@ -401,7 +401,7 @@
     </main>
   </div>
 
-  <!-- ==================== DISPLAY TV SIGNAGE (DENGAN TOMBOL FULLSCREEN) ==================== -->
+  <!-- ==================== DISPLAY TV SIGNAGE (DENGAN TOMBOL FULLSCREEN & LOGIKA 5 MENIT SEBELUM) ==================== -->
   <div id="signageModal" class="fixed inset-0 w-screen h-screen z-[1000] bg-slate-900 bg-cover bg-center overflow-hidden flex flex-col justify-between hidden" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%231e293b%22/></svg>');">
     
     <!-- Full Height Backdrop Overlay -->
@@ -1146,19 +1146,42 @@
       }).join('');
     }
 
+    /**
+     * RENDER TV SIGNAGE (LOGIKA MODIFIKASI 5 MENIT SEBELUM KETETAPAN WAKTU)
+     * Jadwal hari ini hanya akan muncul jika waktu saat ini sudah memasuki H-5 Menit dari jam mulai kegiatan.
+     */
     function renderTvSignage() {
       const container = document.getElementById('tvScheduleGrid');
       if (!container) return;
 
-      const today = new Date().toISOString().split('T')[0];
-      const todaySchedules = schedules.filter(s => s.date === today);
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
+      // Filter jadwal hari ini & yang waktunya sudah memasuki 5 menit sebelum jam mulai
+      const todaySchedules = schedules.filter(s => {
+        if (s.date !== today) return false;
+
+        const start24 = window.format24Hour(s.startTime);
+        const parts = start24.split(':');
+        if (parts.length < 2) return true;
+
+        const startHours = parseInt(parts[0], 10);
+        const startMins = parseInt(parts[1], 10);
+        if (isNaN(startHours) || isNaN(startMins)) return true;
+
+        const startTotalMinutes = startHours * 60 + startMins;
+
+        // Tampilkan di TV HANYA jika waktu sekarang >= (waktu_mulai - 5 menit)
+        return currentTotalMinutes >= (startTotalMinutes - 5);
+      });
 
       if (todaySchedules.length === 0) {
         container.innerHTML = `
           <div class="col-span-full py-12 sm:py-16 bg-white/90 backdrop-blur rounded-3xl border border-white/40 text-center p-6 sm:p-8 shadow-xl">
             <svg class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <h3 class="text-base sm:text-lg font-black text-slate-800">Tidak Ada Jadwal Kegiatan Hari Ini</h3>
-            <p class="text-xs font-semibold text-slate-500 mt-1">Seluruh ruangan siap digunakan sesuai prosedur instansi.</p>
+            <h3 class="text-base sm:text-lg font-black text-slate-800">Tidak Ada Jadwal Kegiatan Saat Ini</h3>
+            <p class="text-xs font-semibold text-slate-500 mt-1">Jadwal akan otomatis ditampilkan di layar TV 5 menit sebelum kegiatan dimulai.</p>
           </div>
         `;
         return;
@@ -1179,7 +1202,7 @@
         } else if (status === 'AKAN DATANG') {
           badgeHtml = `
             <div class="inline-flex items-center px-2.5 py-1 rounded-full bg-brand-50 text-[#00a3ff] border border-brand-200 text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-sm">
-              <span>HARI INI</span>
+              <span>SEGERA MULAI</span>
             </div>
           `;
         } else {
