@@ -98,7 +98,7 @@
 
   <script>
     // URL Web App Google Apps Script (Ubah dengan Web App URL hasil deployment Anda)
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbyItjOudzom-LR-U3yTfVT3S7onPUMBgwYLNhf3zVdIeFOEMg4dQdkj4ChduMa7-vuX6g/exec";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbywVNHLLkxc_Wtn6AJ941gwqgnBNrjqSVtdzE7-2C99KZP4N4p1vedOobK-l42D1ZvgJA/exec";
   </script>
 
   <!-- Endpoint Configuration Warning Banner -->
@@ -760,10 +760,11 @@
           localStorage.setItem('corp_operator_pin', operatorPin);
         }
 
-        if (res.appLogo) {
+        // Validasi ekstensi Base64 utuh dari server agar foto tidak rusak
+        if (res.appLogo && res.appLogo.startsWith('data:image')) {
           localStorage.setItem('corp_app_logo', res.appLogo);
         }
-        if (res.tvBg) {
+        if (res.tvBg && res.tvBg.startsWith('data:image')) {
           localStorage.setItem('corp_tv_bg', res.tvBg);
         }
         
@@ -927,7 +928,7 @@
     }
 
     /* Kompresi Gambar Otomatis agar muat di batas sel Google Sheets (< 44,000 karakter) */
-    function compressMediaImage(img, maxDimension, targetMaxChars = 44000, mimeType = 'image/jpeg') {
+    window.compressMediaImage = function(img, maxDimension, targetMaxChars = 44000, mimeType = 'image/jpeg') {
       let width = img.width;
       let height = img.height;
       if (width > height && width > maxDimension) {
@@ -960,6 +961,15 @@
         ctx.drawImage(img, 0, 0, width, height);
         base64Data = canvas.toDataURL(mimeType, 0.4);
       }
+      
+      // Fallback Kompresi Mutlak (Cegah Crash 50.000 Karakter Google Sheets)
+      if (base64Data.length > 49000) {
+         canvas.width = 150;
+         canvas.height = 150;
+         ctx.drawImage(img, 0, 0, 150, 150);
+         base64Data = canvas.toDataURL('image/jpeg', 0.2);
+      }
+      
       return base64Data;
     }
 
